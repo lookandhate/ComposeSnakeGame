@@ -30,11 +30,11 @@ import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
 import ru.lookandhate.game.ui.theme.GameTheme
 
-data class State(val food: Pair<Int, Int>, val snake: List<Pair<Int, Int>>)
+data class State(val food: Pair<Int, Int>, val snake: List<Pair<Int, Int>>, var points: Int)
 
 class Game(val scope: CoroutineScope) {
     private val mutableState: MutableStateFlow<State> =
-        MutableStateFlow(State(Pair(0, 0), listOf(Pair(0, 0))))
+        MutableStateFlow(State(Pair(0, 0), listOf(Pair(0, 0)), 0))
     val state: Flow<State> = mutableState
     private val mutex = Mutex()
 
@@ -68,10 +68,12 @@ class Game(val scope: CoroutineScope) {
                     }
                     if (newPosition == it.food) {
                         snakeLength++
+                        it.points++
                     }
 
                     if (it.snake.contains(newPosition)) {
                         snakeLength = 4
+                        it.points = 0
                     }
 
                     it.copy(
@@ -127,12 +129,15 @@ fun Snake(game: Game) {
     val state = game.state.collectAsState(initial = null)
 
     Column(horizontalAlignment = Alignment.CenterHorizontally) {
+        Text(text = "Points: ${state.value?.points}")
         state.value?.let {
             Board(it)
         }
         Buttons({
             game.move = it
         })
+
+
     }
 
 }
