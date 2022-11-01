@@ -32,7 +32,12 @@ import kotlinx.coroutines.sync.withLock
 import ru.lookandhate.game.ui.theme.GameTheme
 import kotlin.random.Random
 
-data class State(val food: Pair<Int, Int>, val snake: List<Pair<Int, Int>>, var points: Int)
+data class State(
+    val food: Pair<Int, Int>,
+    val snake: List<Pair<Int, Int>>,
+    var points: Int,
+    var snakeLength: Int = 4
+)
 
 class Game(val scope: CoroutineScope) {
     private val mutableState: MutableStateFlow<State> =
@@ -49,6 +54,29 @@ class Game(val scope: CoroutineScope) {
             }
         }
 
+    private fun loseGame(gameState: State) {
+        gameState.snakeLength = 4
+        gameState.points = 0
+    }
+
+    private fun eatFood(gameState: State) {
+        gameState.snakeLength++
+        gameState.points++
+    }
+
+    private suspend fun getNewPosition(gameState: State): Pair<Int, Int> {
+        val newPosition = gameState.snake.first().let { pos ->
+            mutex.withLock {
+                Pair(
+                    (pos.first + move.first + BOARD_SIZE) % BOARD_SIZE,
+                    (pos.second + move.second + BOARD_SIZE) % BOARD_SIZE
+                )
+            }
+        }
+        return newPosition
+    }
+
+
     companion object {
         const val BOARD_SIZE = 16
     }
@@ -56,26 +84,16 @@ class Game(val scope: CoroutineScope) {
 
     init {
         scope.launch {
-            var snakeLength = 4
             while (true) {
                 delay(150)
                 mutableState.update {
-                    val newPosition = it.snake.first().let { pos ->
-                        mutex.withLock {
-                            Pair(
-                                (pos.first + move.first + BOARD_SIZE) % BOARD_SIZE,
-                                (pos.second + move.second + BOARD_SIZE) % BOARD_SIZE
-                            )
-                        }
-                    }
+                    val newPosition = getNewPosition(it)
                     if (newPosition == it.food) {
-                        snakeLength++
-                        it.points++
+                        eatFood(it)
                     }
 
                     if (it.snake.contains(newPosition)) {
-                        snakeLength = 4
-                        it.points = 0
+                        loseGame(it)
                     }
 
                     it.copy(
@@ -87,12 +105,13 @@ class Game(val scope: CoroutineScope) {
                         } else {
                             it.food
                         },
-                        snake = listOf(newPosition) + it.snake.take(snakeLength - 1)
+                        snake = listOf(newPosition) + it.snake.take(it.snakeLength - 1)
                     )
                 }
             }
         }
     }
+
 }
 
 class MainActivity : ComponentActivity() {
