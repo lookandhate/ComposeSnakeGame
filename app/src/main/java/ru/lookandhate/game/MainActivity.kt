@@ -6,6 +6,7 @@ import androidx.activity.compose.setContent
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.*
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.KeyboardArrowDown
@@ -29,12 +30,13 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
 import ru.lookandhate.game.ui.theme.GameTheme
+import kotlin.random.Random
 
 data class State(val food: Pair<Int, Int>, val snake: List<Pair<Int, Int>>, var points: Int)
 
 class Game(val scope: CoroutineScope) {
     private val mutableState: MutableStateFlow<State> =
-        MutableStateFlow(State(Pair(0, 0), listOf(Pair(0, 0)), 0))
+        MutableStateFlow(State(Pair(8, 8), listOf(Pair(0, 0)), 0))
     val state: Flow<State> = mutableState
     private val mutex = Mutex()
 
@@ -79,8 +81,8 @@ class Game(val scope: CoroutineScope) {
                     it.copy(
                         food = if (newPosition == it.food) {
                             Pair(
-                                (it.food.first + 1 + BOARD_SIZE) % BOARD_SIZE,
-                                (it.food.second + 1 + BOARD_SIZE) % BOARD_SIZE
+                                (Random.nextInt(BOARD_SIZE)),
+                                (Random.nextInt(BOARD_SIZE))
                             )
                         } else {
                             it.food
@@ -184,7 +186,8 @@ fun Board(state: State) {
             Modifier
                 .offset(x = titleSize * state.food.first, y = titleSize * state.food.second)
                 .size(titleSize)
-                .background(Color.Red)
+                .background(Color.Red, CircleShape)
+
         )
 
         state.snake.forEach {
@@ -193,6 +196,7 @@ fun Board(state: State) {
                     .offset(x = titleSize * it.first, y = titleSize * it.second)
                     .size(titleSize)
                     .background(Color.Green)
+                    .border(2.dp, Color.DarkGray)
             )
         }
 
