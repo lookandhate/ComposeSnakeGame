@@ -21,6 +21,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.lifecycleScope
+import androidx.room.Room
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.flow.Flow
@@ -29,6 +30,9 @@ import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
+import ru.lookandhate.game.Room.AppDataBase
+import ru.lookandhate.game.Room.GameResult
+import ru.lookandhate.game.Room.GameResultDao
 import ru.lookandhate.game.ui.theme.GameTheme
 import kotlin.random.Random
 
@@ -39,11 +43,13 @@ data class State(
     var snakeLength: Int = 4
 )
 
-class Game(val scope: CoroutineScope) {
+class Game(val scope: CoroutineScope, context: MainActivity) {
     private val mutableState: MutableStateFlow<State> =
         MutableStateFlow(State(Pair(8, 8), listOf(Pair(0, 0)), 0))
     val state: Flow<State> = mutableState
     private val mutex = Mutex()
+    private val db = Room.databaseBuilder(context, AppDataBase::class.java, "database")
+        .build()
 
     var move = Pair(0, 1)
         set(value) {
@@ -54,7 +60,15 @@ class Game(val scope: CoroutineScope) {
             }
         }
 
-    private fun loseGame(gameState: State) {
+    private suspend fun loseGame(gameState: State) {
+        val gameResultDao = db.gameResultDao()
+
+        gameResultDao.insert(
+            GameResult(
+                points = gameState.points,
+                date = System.currentTimeMillis()
+            )
+        )
         gameState.snakeLength = 4
         gameState.points = 0
     }
@@ -117,7 +131,7 @@ class Game(val scope: CoroutineScope) {
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        val game = Game(lifecycleScope)
+        val game = Game(lifecycleScope, this)
         setContent {
             GameTheme {
                 // A surface container using the 'background' color from the theme
