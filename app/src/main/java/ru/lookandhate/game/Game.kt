@@ -1,5 +1,6 @@
 package ru.lookandhate.game
 
+import androidx.compose.ui.platform.LocalContext
 import androidx.room.Room
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.delay
@@ -11,6 +12,7 @@ import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
 import ru.lookandhate.game.Room.AppDataBase
 import ru.lookandhate.game.Room.GameResult
+import ru.lookandhate.game.Screens.RecordScreen
 import kotlin.random.Random
 
 data class State(
@@ -26,8 +28,7 @@ class Game(val scope: CoroutineScope, context: MainActivity) {
     val state: Flow<State> = mutableState
     private val mutex = Mutex()
 
-    private val db = Room.databaseBuilder(context, AppDataBase::class.java, "database")
-        .build()
+    val db = context.getDB()
 
     var move = Pair(0, 1)
         set(value) {
@@ -39,7 +40,7 @@ class Game(val scope: CoroutineScope, context: MainActivity) {
         }
 
     private suspend fun loseGame(gameState: State) {
-        val gameResultDao = db.gameResultDao()
+        val gameResultDao = db!!.gameResultDao()
 
         gameResultDao.insert(
             GameResult(
@@ -49,6 +50,7 @@ class Game(val scope: CoroutineScope, context: MainActivity) {
         )
         gameState.snakeLength = 4
         gameState.points = 0
+
     }
 
     private fun eatFood(gameState: State) {
