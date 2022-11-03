@@ -19,20 +19,17 @@ import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
 import ru.lookandhate.game.Activities.ui.theme.GameTheme
 import ru.lookandhate.game.RetrofitEndpoints
+import ru.lookandhate.game.RetrofitSingleton
 import ru.lookandhate.game.Room.AppDataBase
 import ru.lookandhate.game.Room.GameResult
 import ru.lookandhate.game.Screens.RecordScreen
 
 class RecordScreenRest : ComponentActivity() {
-    private val apiURL = "http://192.168.0.104:8080"
 
-    private val retrofit = Retrofit.Builder()
-        .baseUrl(apiURL)
-        .addConverterFactory(GsonConverterFactory.create())
-        .build().create(RetrofitEndpoints::class.java)
+
+    private val retrofit = RetrofitSingleton.retrofit
 
     private var records: List<GameResult> = listOf()
-
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)

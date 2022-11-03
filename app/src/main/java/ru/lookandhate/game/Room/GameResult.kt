@@ -11,3 +11,8 @@ data class GameResult(
     @ColumnInfo(name = "date") val date: Long
 
 )
+
+data class GameResultWithoutID(
+    val points: Int,
+    val date: Long
+)

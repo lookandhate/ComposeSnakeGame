@@ -3,6 +3,7 @@ package ru.lookandhate.game
 import android.content.Intent
 import android.util.Log
 import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -14,6 +15,7 @@ import ru.lookandhate.game.Activities.MainActivity
 import ru.lookandhate.game.Activities.RecordScreenRest
 import ru.lookandhate.game.Activities.RecordsScreen
 import ru.lookandhate.game.Room.GameResult
+import ru.lookandhate.game.Room.GameResultWithoutID
 import kotlin.random.Random
 
 data class State(
@@ -46,6 +48,19 @@ class Game(val scope: CoroutineScope, private val context: MainActivity) {
             points = mutableState.value.points,
             date = System.currentTimeMillis()
         )
+        val retrofit = RetrofitSingleton.retrofit
+        GlobalScope.launch {
+            val result = GameResultWithoutID(gameResult.points, gameResult.date)
+            Log.d("Game", "postGameResult: $result")
+            val response = retrofit.postRecord(result)
+            if (response.isSuccessful) {
+                Log.d("Game", "postGameResult: ${response.body().toString()}")
+            } else {
+                Log.d("Game", "postGameResult: ${response.errorBody()}")
+            }
+
+        }
+
     }
 
     private suspend fun loseGame(gameState: State) {
@@ -58,6 +73,7 @@ class Game(val scope: CoroutineScope, private val context: MainActivity) {
                 date = System.currentTimeMillis()
             )
         )
+        postGameResult()
         gameState.snakeLength = 4
         gameState.points = 0
         val intent = Intent(this.context, RecordScreenRest::class.java)
