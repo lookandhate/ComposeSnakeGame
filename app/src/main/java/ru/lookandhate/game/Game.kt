@@ -1,7 +1,7 @@
 package ru.lookandhate.game
 
-import androidx.compose.ui.platform.LocalContext
-import androidx.room.Room
+import android.content.Intent
+import android.util.Log
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.Flow
@@ -10,23 +10,24 @@ import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
-import ru.lookandhate.game.Room.AppDataBase
+import ru.lookandhate.game.Activities.MainActivity
+import ru.lookandhate.game.Activities.RecordsScreen
 import ru.lookandhate.game.Room.GameResult
-import ru.lookandhate.game.Screens.RecordScreen
 import kotlin.random.Random
 
 data class State(
     val food: Pair<Int, Int>,
     val snake: List<Pair<Int, Int>>,
     var points: Int,
-    var snakeLength: Int = 4
+    var snakeLength: Int = 4,
 )
 
-class Game(val scope: CoroutineScope, context: MainActivity) {
+class Game(val scope: CoroutineScope, private val context: MainActivity) {
     private val mutableState: MutableStateFlow<State> =
         MutableStateFlow(State(Pair(8, 8), listOf(Pair(0, 0)), 0))
     val state: Flow<State> = mutableState
     private val mutex = Mutex()
+
 
     val db = context.getDB()
 
@@ -40,6 +41,7 @@ class Game(val scope: CoroutineScope, context: MainActivity) {
         }
 
     private suspend fun loseGame(gameState: State) {
+        Log.d("DB", "$db")
         val gameResultDao = db!!.gameResultDao()
 
         gameResultDao.insert(
@@ -50,7 +52,8 @@ class Game(val scope: CoroutineScope, context: MainActivity) {
         )
         gameState.snakeLength = 4
         gameState.points = 0
-
+        val intent = Intent(this.context, RecordsScreen::class.java)
+        context.startActivity(intent)
     }
 
     private fun eatFood(gameState: State) {
@@ -79,6 +82,7 @@ class Game(val scope: CoroutineScope, context: MainActivity) {
     init {
         scope.launch {
             while (true) {
+
                 delay(150)
                 mutableState.update {
                     val newPosition = getNewPosition(it)
