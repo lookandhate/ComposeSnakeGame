@@ -6,7 +6,7 @@ import androidx.room.Query
 
 @Dao
 interface GameResultDao {
-    @Query("SELECT * FROM GameResult")
+    @Query("SELECT * FROM GameResult ORDER BY result DESC")
     suspend fun getAll(): List<GameResult>
 
     @Insert()
