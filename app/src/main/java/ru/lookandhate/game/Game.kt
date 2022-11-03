@@ -11,6 +11,7 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
 import ru.lookandhate.game.Activities.MainActivity
+import ru.lookandhate.game.Activities.RecordScreenRest
 import ru.lookandhate.game.Activities.RecordsScreen
 import ru.lookandhate.game.Room.GameResult
 import kotlin.random.Random
@@ -52,7 +53,7 @@ class Game(val scope: CoroutineScope, private val context: MainActivity) {
         )
         gameState.snakeLength = 4
         gameState.points = 0
-        val intent = Intent(this.context, RecordsScreen::class.java)
+        val intent = Intent(this.context, RecordScreenRest::class.java)
         context.startActivity(intent)
     }
 
