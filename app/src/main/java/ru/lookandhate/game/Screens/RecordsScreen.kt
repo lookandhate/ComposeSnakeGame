@@ -4,8 +4,12 @@ import android.util.Log
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
+import androidx.compose.material.Divider
 import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import ru.lookandhate.game.Room.GameResult
 import java.util.*
@@ -14,25 +18,38 @@ import java.util.*
 fun RecordScreen(records: List<GameResult>) {
 //    Text(text = "Records")
     Log.d("Records", records.toString())
-    Column() {
+    LazyColumn {
+        item() {
+            Row(
+            ) {
+                Column(modifier = Modifier.weight(0.7f)) {
+                    Text(text = "Date of record")
+                }
+                Column( Modifier.weight(0.3f)) {
+                    Text(text = "Points")
+                }
 
+            }
+            Divider()
+        }
 
-        records.forEach {
-            RecordRow(record = it)
+        items(records) { record ->
+            RecordItem(record)
+
         }
     }
 }
 
 @Composable
-fun RecordRow(record: GameResult) {
-    Row(horizontalArrangement = Arrangement.spacedBy(10.dp)) {
-        Column() {
+fun RecordItem(record: GameResult) {
+    Row(
+    ) {
+        Column(modifier = Modifier.weight(0.7f)) {
             Text(text = Date(record.date).toString())
         }
-
-        Column {
+        Column( Modifier.weight(0.3f)) {
             Text(text = record.points.toString())
         }
-    }
 
+    }
 }
