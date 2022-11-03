@@ -41,6 +41,13 @@ class Game(val scope: CoroutineScope, private val context: MainActivity) {
             }
         }
 
+    private suspend fun postGameResult() {
+        val gameResult = GameResult(
+            points = mutableState.value.points,
+            date = System.currentTimeMillis()
+        )
+    }
+
     private suspend fun loseGame(gameState: State) {
         Log.d("DB", "$db")
         val gameResultDao = db!!.gameResultDao()
