@@ -20,6 +20,8 @@ data class State(
     val snake: List<Pair<Int, Int>>,
     var points: Int,
     var snakeLength: Int = 4,
+    var gameStart: Long = System.currentTimeMillis(),
+    var isGameLoosed: Boolean = false,
 )
 
 class Game(val scope: CoroutineScope, private val context: MainActivity) {
@@ -40,16 +42,29 @@ class Game(val scope: CoroutineScope, private val context: MainActivity) {
             }
         }
 
+    public fun setLoosed(value: Boolean){
+        scope.launch {
+            mutex.withLock {
+                mutableState.update {
+                    it.copy(isGameLoosed = value)
+                }
+            }
+        }
+    }
+
     private suspend fun loseGame(gameState: State) {
         Log.d("DB", "$db")
+        gameState.isGameLoosed = true
         val gameResultDao = db!!.gameResultDao()
-
-        gameResultDao.insert(
-            GameResult(
-                points = gameState.points,
-                date = System.currentTimeMillis()
+        mutex.withLock {
+            gameResultDao.insert(
+                GameResult(
+                    points = gameState.points,
+                    date = System.currentTimeMillis(),
+                    date_start = gameState.gameStart,
+                )
             )
-        )
+        }
         gameState.snakeLength = 4
         gameState.points = 0
         val intent = Intent(this.context, RecordsScreen::class.java)
@@ -90,7 +105,7 @@ class Game(val scope: CoroutineScope, private val context: MainActivity) {
                         eatFood(it)
                     }
 
-                    if (it.snake.contains(newPosition)) {
+                    if (it.snake.contains(newPosition) && !it.isGameLoosed) {
                         loseGame(it)
                     }
 

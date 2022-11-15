@@ -61,7 +61,7 @@ fun RecordItem(record: GameResult) {
     Row(
     ) {
         Column(modifier = Modifier.weight(0.7f)) {
-            Text(text = Date(record.date).toString())
+            Text(text = "${(record.date_start - record.date) / -1000} seconds")
         }
         Column(Modifier.weight(0.3f)) {
             Text(text = record.points.toString())

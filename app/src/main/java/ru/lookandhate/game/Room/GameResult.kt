@@ -8,6 +8,7 @@ import androidx.room.PrimaryKey
 data class GameResult(
     @PrimaryKey(autoGenerate = true) val id: Int = 0,
     @ColumnInfo(name = "result") val points: Int,
-    @ColumnInfo(name = "date") val date: Long
+    @ColumnInfo(name = "date") val date: Long,
+    @ColumnInfo(name = "date_start") val date_start: Long
 
 )

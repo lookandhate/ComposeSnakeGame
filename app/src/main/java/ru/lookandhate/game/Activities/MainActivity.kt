@@ -18,6 +18,7 @@ import ru.lookandhate.game.ui.theme.GameTheme
 
 class MainActivity : ComponentActivity() {
     private var db: AppDataBase? = null
+    private var game: Game? = null
 
     fun getDB(): AppDataBase? {
         return db
@@ -26,8 +27,9 @@ class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         this.db = Room.databaseBuilder(this, AppDataBase::class.java, "database")
+            .fallbackToDestructiveMigration()
             .build()
-        val game = Game(lifecycleScope, this)
+        this.game = Game(lifecycleScope, this)
 
         Log.d("DB", "DB created $db")
         setContent {
@@ -37,10 +39,21 @@ class MainActivity : ComponentActivity() {
                     modifier = Modifier.fillMaxSize(),
                     color = MaterialTheme.colors.background
                 ) {
-                    Main(game = game)
+                    Main(game = game!!)
                 }
             }
         }
+    }
+
+    override fun onPause() {
+        super.onPause()
+        Log.d("MainActivity", "onPause")
+    }
+
+    override fun onResume() {
+        super.onResume()
+        this.game?.setLoosed(false)
+        Log.d("MainActivity", "onResume")
     }
 }
 
