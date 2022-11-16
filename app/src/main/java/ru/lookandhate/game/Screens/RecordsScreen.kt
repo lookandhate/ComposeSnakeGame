@@ -30,7 +30,7 @@ fun RecordScreen(records: List<GameResult>) {
             ) {
                 Column(modifier = Modifier.weight(0.7f)) {
                     ClickableText(
-                        text = AnnotatedString("Date of record"),
+                        text = AnnotatedString("Game time"),
                         style= TextStyle(fontSize = 20.sp, color = Color.Blue),
                         onClick = {
                             recordsState.sortByDescending { it.date }
